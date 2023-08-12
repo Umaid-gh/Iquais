@@ -12,6 +12,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -20,17 +22,28 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
+    @Autowired
+    private AuthenticationEntryPoint authenticationEntryPoint;
+
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
        http.cors().disable()
                .csrf().disable()
                .authorizeRequests()
-               .antMatchers("/signup")
+               .antMatchers("/v1/signup")
                .permitAll()
+               .antMatchers("/v1/signin")
+               .authenticated()
                .anyRequest()
                .authenticated()
                .and()
-               .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+               .httpBasic();
+
+       http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+       http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
     @Override
