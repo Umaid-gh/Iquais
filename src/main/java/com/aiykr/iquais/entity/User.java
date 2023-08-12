@@ -19,5 +19,8 @@ public class User {
     @Field
     String phoneNumber;
     String type;
+
+    //Nikhil
+    String password;
     String status = "active";
 }
