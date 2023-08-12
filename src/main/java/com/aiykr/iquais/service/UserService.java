@@ -1,10 +1,17 @@
 package com.aiykr.iquais.service;
 
-import com.aiykr.iquais.dto.request.UserDto;
-import com.aiykr.iquais.dto.response.UserResponse;
+import com.aiykr.iquais.dto.request.PostUserDTO;
+import com.aiykr.iquais.dto.response.Response;
+import com.aiykr.iquais.dto.response.UserResponseDTO;
+import com.aiykr.iquais.exception.ResponseExceptionHandler;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 public interface UserService {
-    public UserResponse<List<UserDto>> getAllUsers();
+    public ResponseEntity<Response> createUser(PostUserDTO postUserDTO) throws ResponseExceptionHandler;
+
+    ResponseEntity<Response<UserResponseDTO>> getStudentById(String id);
+
+    public ResponseEntity<Response<List<UserResponseDTO>>> getAllUsers();
 }
