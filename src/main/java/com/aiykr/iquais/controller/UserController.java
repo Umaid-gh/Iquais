@@ -3,8 +3,10 @@ package com.aiykr.iquais.controller;
 import com.aiykr.iquais.dto.request.PostUserDTO;
 import com.aiykr.iquais.dto.response.Response;
 import com.aiykr.iquais.dto.response.UserResponseDTO;
-import com.aiykr.iquais.exception.ResponseExceptionHandler;
+import com.aiykr.iquais.exception.IquaisException;
 import com.aiykr.iquais.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +17,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1")
 public class UserController {
-	
+
+	private static final Logger log = LoggerFactory.getLogger(UserController.class);
 	@Autowired
 	UserService userService;
 
@@ -24,7 +27,7 @@ public class UserController {
 		return userService.getAllUsers();
 	}
 	@PostMapping("/users/student")
-	public ResponseEntity<Response> createStudent(@RequestBody PostUserDTO postUserDTO) throws ResponseExceptionHandler {
+	public ResponseEntity<Response> createStudent(@RequestBody PostUserDTO postUserDTO) throws IquaisException {
 		return userService.createUser(postUserDTO);
 	}
 

@@ -7,5 +7,6 @@ import lombok.Data;
 @Builder
 public class Meta {
     private String message;
+    private String errorCode;
     private int status;
 }
