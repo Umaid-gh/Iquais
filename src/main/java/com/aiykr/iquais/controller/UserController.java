@@ -18,21 +18,29 @@ import java.util.List;
 @RequestMapping("/v1")
 public class UserController {
 
-	private static final Logger log = LoggerFactory.getLogger(UserController.class);
-	@Autowired
-	UserService userService;
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
-	@GetMapping("/users/all")
-	public ResponseEntity<Response<List<UserResponseDTO>>> getAllUsers() {
-		return userService.getAllUsers();
-	}
-	@PostMapping("/users/student")
-	public ResponseEntity<Response> createStudent(@RequestBody PostUserDTO postUserDTO) throws IquaisException {
-		return userService.createUser(postUserDTO);
-	}
+    @Autowired
+    UserService userService;
 
-	@GetMapping("/users")
-	public ResponseEntity<Response<UserResponseDTO>> getStudentById(@PathParam("id") String id) {
-		return userService.getStudentById(id);
-	}
+    @GetMapping("/users/all")
+    public ResponseEntity<Response<List<UserResponseDTO>>> getAllUsers() {
+        log.info("Fetch All Users");
+        Response<List<UserResponseDTO>> response = userService.getAllUsers();
+        return ResponseEntity.status(response.getMeta().getStatus()).body(response);
+    }
+
+    @PostMapping("/users/student")
+    public ResponseEntity<Response<UserResponseDTO>> createStudent(@RequestBody PostUserDTO postUserDTO) throws IquaisException {
+        log.info("Create New Student");
+        Response<UserResponseDTO> response = userService.createUser(postUserDTO);
+        return ResponseEntity.status(response.getMeta().getStatus()).body(response);
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<Response<UserResponseDTO>> getStudentById(@PathParam("id") String id) {
+        log.info("Get Student by ID");
+        Response<UserResponseDTO> response = userService.getStudentById(id);
+        return ResponseEntity.status(response.getMeta().getStatus()).body(response);
+    }
 }
