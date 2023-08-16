@@ -1,9 +1,24 @@
 package com.aiykr.iquais.dto.response;
 
+import io.swagger.annotations.ApiModel;
 import lombok.Data;
 
+/**
+ * Data class representing the API response structure containing data and metadata.
+ *
+ * @param <T> The type of data contained in the response.
+ */
+@ApiModel(description = "API response containing data and metadata")
 @Data
 public class Response<T> {
+
+	/**
+	 * The data payload of the response.
+	 */
 	private T data;
-	Meta meta;
+
+	/**
+	 * The metadata information providing details about the response.
+	 */
+	private Meta meta;
 }

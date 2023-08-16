@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+/**
+ * Implementation class for sending emails.
+ */
 @Service
 public class EmailServiceImpl implements EmailService {
 
@@ -21,6 +24,16 @@ public class EmailServiceImpl implements EmailService {
     @Autowired
     private JavaMailSender javaMailSender;
 
+    /**
+     * Sends an email with the provided details.
+     *
+     * @param to      The recipient email address.
+     * @param cc      The CC (carbon copy) email address.
+     * @param subject The subject of the email.
+     * @param content The content of the email.
+     * @throws MessagingException If an error occurs while sending the email.
+     * @throws IquaisException    If there is a custom application-specific exception related to sending emails.
+     */
     @Override
     public void sendEmail(String to, String cc, String subject, String content) throws MessagingException, IquaisException {
         MimeMessage message = javaMailSender.createMimeMessage();

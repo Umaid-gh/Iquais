@@ -39,7 +39,7 @@
         <dependency>
             <groupId>org.modelmapper</groupId>
             <artifactId>modelmapper</artifactId>
-            <version>3.1.1</version>
+            <version>3.1.1</version> <!-- Can Update this version to the latest version -->
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -48,6 +48,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-boot-starter</artifactId>
+            <version>3.0.0</version> <!-- Can Update this version to the latest version -->
         </dependency>
     </dependencies>
 

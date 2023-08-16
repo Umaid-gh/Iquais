@@ -6,10 +6,13 @@ import com.aiykr.iquais.dto.response.Response;
 import com.aiykr.iquais.dto.response.UserResponseDTO;
 import com.aiykr.iquais.entity.UserDAO;
 import com.aiykr.iquais.entity.UserType;
+import com.aiykr.iquais.exception.EmailSendingException;
 import com.aiykr.iquais.exception.IquaisException;
 import com.aiykr.iquais.repository.UserRepository;
 import com.aiykr.iquais.service.EmailService;
 import com.aiykr.iquais.service.UserService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.bson.types.ObjectId;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -24,6 +27,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Implementation class for managing user-related operations.
+ */
+@Api(tags = "User Service")
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -33,8 +40,16 @@ public class UserServiceImpl implements UserService {
     UserRepository userRepository;
 
     @Autowired
-    private EmailService emailService; // Assuming you have autowired the EmailService
+    private EmailService emailService;
 
+    /**
+     * Creates a new user based on the provided information.
+     *
+     * @param postUserDTO The data required to create the user.
+     * @return A response containing user details.
+     * @throws IquaisException If an error occurs during user creation.
+     */
+    @ApiOperation("Create a new user")
     public Response<UserResponseDTO> createUser(PostUserDTO postUserDTO) throws IquaisException {
         Response<UserResponseDTO> response = new Response<>();
         try {
@@ -50,6 +65,7 @@ public class UserServiceImpl implements UserService {
             if (studentExists) {
                 String existingEmail = studentUsers.get(0).getEmail();
                 log.info("Student Email {} already present in our DB", existingEmail);
+                log.info("Student {} not created", postUserDTO.getFirstName());
                 throw new IquaisException(HttpStatus.CONFLICT, "IQ002", "Student Email already present in our DB");
             } else {
                 // Create Student
@@ -85,7 +101,7 @@ public class UserServiceImpl implements UserService {
             // Generate and send the response
             UserResponseDTO userResponseDTO = new ModelMapper().map(postUserDTO, UserResponseDTO.class);
             response.setData(userResponseDTO);
-            response.setMeta(Meta.builder().status(HttpStatus.CREATED.value()).message("Student Created Successfully").build());
+            response.setMeta(Meta.builder().statusCode(HttpStatus.CREATED.value()).message("Student Created Successfully").build());
             return response;
         } catch (IquaisException iqEx) {
             throw iqEx;
@@ -96,32 +112,53 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * Sends an email to the student and guardian with account creation and linking information.
+     *
+     * @param studentEmail  The email address of the student.
+     * @param guardianEmail The email address of the guardian.
+     * @throws IquaisException If an error occurs while sending the email.
+     */
+    @ApiOperation("send Email")
     private void sendEmailTo(String studentEmail, String guardianEmail) throws IquaisException {
         try {
             emailService.sendEmail(studentEmail, guardianEmail, "Student Account Created and Guardian Linked", "Welcome to our platform! \nYour password will be sent in separate email!!");
             log.info("Email sent successfully!!");
-        } catch (MessagingException messagingException) {
+        } catch (MessagingException msgEx) {
             // Handle exception properly in production code
-            log.error("Error sending email: {}", messagingException.getMessage(), messagingException);
+            log.error("Error sending email: {}", msgEx.getMessage(), msgEx);
             // You can rethrow the exception if necessary
-            throw new IquaisException(HttpStatus.UNAUTHORIZED, "IQ003", "Error while sending Email");
+            throw new EmailSendingException(HttpStatus.UNAUTHORIZED, "IQ003", "Error while sending Email");
         }
     }
 
+    /**
+     * Retrieves a student's information based on the provided ID.
+     *
+     * @param id The unique ID of the student to retrieve.
+     * @return A response containing the retrieved student's information.
+     */
+    @ApiOperation("Retrieve a student by ID")
     public Response<UserResponseDTO> getStudentById(String id) {
         Response<UserResponseDTO> response = new Response<>();
         Optional<UserDAO> optionalUserDAO = userRepository.findById(new ObjectId(id));
         if (optionalUserDAO.isPresent()) {
             UserDAO userDAO = optionalUserDAO.get();
             UserResponseDTO userResponseDTO = new ModelMapper().map(userDAO, UserResponseDTO.class);
-            response.setMeta(Meta.builder().status(HttpStatus.OK.value()).message("Student Retrieved Successfully").build());
+            response.setMeta(Meta.builder().statusCode(HttpStatus.OK.value()).message("Student Retrieved Successfully").build());
             response.setData(userResponseDTO);
         } else {
-            response.setMeta(Meta.builder().status(HttpStatus.NOT_FOUND.value()).message("Student Retrieved Successfully").build());
+            response.setMeta(Meta.builder().statusCode(HttpStatus.NOT_FOUND.value()).message("Student Retrieved Successfully").build());
         }
         return response;
     }
 
+    /**
+     * Retrieves a list of all users from the database.
+     *
+     * @return A response containing a list of user information.
+     */
+    @ApiOperation("Get all users")
     public Response<List<UserResponseDTO>> getAllUsers() {
         Response<List<UserResponseDTO>> response = new Response<>();
         List<UserDAO> userDAOS = userRepository.findAll();
@@ -129,9 +166,9 @@ public class UserServiceImpl implements UserService {
         ModelMapper modelMapper = new ModelMapper();
         userDAOS.stream().forEach(userDAO -> usersList.add(modelMapper.map(userDAO, UserResponseDTO.class)));
         if(usersList.isEmpty())
-            response.setMeta(Meta.builder().message("DataBase is Empty").status(HttpStatus.NOT_FOUND.value()).build());
+            response.setMeta(Meta.builder().message("DataBase is Empty").statusCode(HttpStatus.NOT_FOUND.value()).build());
         else
-            response.setMeta(Meta.builder().message("Retrieval Successful").status(HttpStatus.OK.value()).build());
+            response.setMeta(Meta.builder().message("Retrieval Successful").statusCode(HttpStatus.OK.value()).build());
         response.setData(usersList);
         return response;
     }
