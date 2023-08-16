@@ -2,8 +2,6 @@ package com.aiykr.iquais.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
-import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
