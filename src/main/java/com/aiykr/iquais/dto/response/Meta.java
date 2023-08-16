@@ -1,13 +1,11 @@
 package com.aiykr.iquais.dto.response;
 
-import io.swagger.annotations.ApiModel;
 import lombok.Builder;
 import lombok.Data;
 
 /**
  * Data class representing metadata information for API responses.
  */
-@ApiModel(description = "Metadata for API responses")
 @Data
 @Builder
 public class Meta {

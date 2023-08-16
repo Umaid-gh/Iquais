@@ -1,13 +1,11 @@
 package com.aiykr.iquais.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.annotations.ApiModel;
 import lombok.Data;
 
 /**
  * Data Transfer Object (DTO) class representing user information in API responses.
  */
-@ApiModel(description = "DTO for user information in API responses")
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserResponseDTO {

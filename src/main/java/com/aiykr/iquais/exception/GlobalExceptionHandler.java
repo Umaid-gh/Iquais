@@ -3,7 +3,6 @@ package com.aiykr.iquais.exception;
 import com.aiykr.iquais.dto.response.Meta;
 import com.aiykr.iquais.dto.response.Response;
 import com.aiykr.iquais.dto.response.UserResponseDTO;
-import io.swagger.annotations.Api;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -11,7 +10,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 /**
  * Global exception handler for handling custom IquaisException.
  */
-@Api(tags = "Global Exception Handler")
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 

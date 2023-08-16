@@ -1,14 +1,12 @@
 package com.aiykr.iquais.service;
 
 import com.aiykr.iquais.exception.IquaisException;
-import io.swagger.annotations.Api;
 
 import javax.mail.MessagingException;
 
 /**
  * Service interface for sending emails.
  */
-@Api(tags = "Email Service")
 public interface EmailService {
 
     /**

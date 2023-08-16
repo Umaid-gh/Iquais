@@ -1,6 +1,5 @@
 package com.aiykr.iquais.entity;
 
-import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -11,7 +10,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 /**
  * Data Access Object (DAO) class representing user information in the MongoDB collection.
  */
-@ApiModel(description = "User Data Access Object")
 @Document(collection = "users")
 @TypeAlias("user")
 @Data

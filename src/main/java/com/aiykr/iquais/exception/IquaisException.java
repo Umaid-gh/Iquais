@@ -1,6 +1,5 @@
 package com.aiykr.iquais.exception;
 
-import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +10,6 @@ import org.springframework.http.HttpStatus;
  * Custom exception class for representing application-specific
  * exceptions with HTTP status, message, and error code.
  */
-@ApiModel(description = "Custom Exception for Iquais Application")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

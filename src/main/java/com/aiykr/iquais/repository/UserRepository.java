@@ -1,7 +1,6 @@
 package com.aiykr.iquais.repository;
 
 import com.aiykr.iquais.entity.UserDAO;
-import io.swagger.annotations.Api;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -11,7 +10,6 @@ import java.util.List;
 /**
  * Repository interface for managing user data in the MongoDB database.
  */
-@Api(tags = "User Repository")
 @Repository
 public interface UserRepository extends MongoRepository<UserDAO, ObjectId> {
 

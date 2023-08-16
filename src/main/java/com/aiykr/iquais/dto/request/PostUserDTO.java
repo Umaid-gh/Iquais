@@ -1,12 +1,10 @@
 package com.aiykr.iquais.dto.request;
 
-import io.swagger.annotations.ApiModel;
 import lombok.Data;
 
 /**
  * Data Transfer Object (DTO) class for creating a new user.
  */
-@ApiModel(description = "DTO for creating a new user")
 @Data
 public class PostUserDTO {
 

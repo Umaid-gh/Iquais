@@ -11,7 +11,6 @@ import com.aiykr.iquais.exception.IquaisException;
 import com.aiykr.iquais.repository.UserRepository;
 import com.aiykr.iquais.service.EmailService;
 import com.aiykr.iquais.service.UserService;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.bson.types.ObjectId;
 import org.modelmapper.ModelMapper;
@@ -30,7 +29,6 @@ import java.util.Optional;
 /**
  * Implementation class for managing user-related operations.
  */
-@Api(tags = "User Service")
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -100,8 +98,8 @@ public class UserServiceImpl implements UserService {
 
             // Generate and send the response
             UserResponseDTO userResponseDTO = new ModelMapper().map(postUserDTO, UserResponseDTO.class);
-            response.setData(userResponseDTO);
             response.setMeta(Meta.builder().statusCode(HttpStatus.CREATED.value()).message("Student Created Successfully").build());
+            response.setData(userResponseDTO);
             return response;
         } catch (IquaisException iqEx) {
             throw iqEx;
@@ -141,15 +139,18 @@ public class UserServiceImpl implements UserService {
     @ApiOperation("Retrieve a student by ID")
     public Response<UserResponseDTO> getStudentById(String id) {
         Response<UserResponseDTO> response = new Response<>();
+        UserResponseDTO userResponseDTO = null;
         Optional<UserDAO> optionalUserDAO = userRepository.findById(new ObjectId(id));
         if (optionalUserDAO.isPresent()) {
             UserDAO userDAO = optionalUserDAO.get();
-            UserResponseDTO userResponseDTO = new ModelMapper().map(userDAO, UserResponseDTO.class);
-            response.setMeta(Meta.builder().statusCode(HttpStatus.OK.value()).message("Student Retrieved Successfully").build());
+            userResponseDTO = new ModelMapper().map(userDAO, UserResponseDTO.class);
             response.setData(userResponseDTO);
+            response.setMeta(Meta.builder().statusCode(HttpStatus.FOUND.value()).message("Student Retrieved Successfully").build());
         } else {
-            response.setMeta(Meta.builder().statusCode(HttpStatus.NOT_FOUND.value()).message("Student Retrieved Successfully").build());
+            response.setMeta(Meta.builder().statusCode(HttpStatus.NOT_FOUND.value()).message("Student Not Found in DB").build());
         }
+        log.info("User Detail: {}",userResponseDTO);
+        response.setData(userResponseDTO);
         return response;
     }
 
@@ -169,6 +170,7 @@ public class UserServiceImpl implements UserService {
             response.setMeta(Meta.builder().message("DataBase is Empty").statusCode(HttpStatus.NOT_FOUND.value()).build());
         else
             response.setMeta(Meta.builder().message("Retrieval Successful").statusCode(HttpStatus.OK.value()).build());
+        log.info("Users Details: {}",usersList);
         response.setData(usersList);
         return response;
     }

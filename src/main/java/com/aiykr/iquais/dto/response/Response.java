@@ -1,6 +1,5 @@
 package com.aiykr.iquais.dto.response;
 
-import io.swagger.annotations.ApiModel;
 import lombok.Data;
 
 /**
@@ -8,7 +7,6 @@ import lombok.Data;
  *
  * @param <T> The type of data contained in the response.
  */
-@ApiModel(description = "API response containing data and metadata")
 @Data
 public class Response<T> {
 
