@@ -11,7 +11,6 @@ import com.aiykr.iquais.exception.IquaisException;
 import com.aiykr.iquais.repository.UserRepository;
 import com.aiykr.iquais.service.EmailService;
 import com.aiykr.iquais.service.UserService;
-import io.swagger.annotations.ApiOperation;
 import org.bson.types.ObjectId;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -47,7 +46,6 @@ public class UserServiceImpl implements UserService {
      * @return A response containing user details.
      * @throws IquaisException If an error occurs during user creation.
      */
-    @ApiOperation("Create a new user")
     public Response<UserResponseDTO> createUser(PostUserDTO postUserDTO) throws IquaisException {
         Response<UserResponseDTO> response = new Response<>();
         try {
@@ -117,7 +115,6 @@ public class UserServiceImpl implements UserService {
      * @param guardianEmail The email address of the guardian.
      * @throws IquaisException If an error occurs while sending the email.
      */
-    @ApiOperation("send Email")
     private void sendEmailTo(String studentEmail, String guardianEmail) throws IquaisException {
         try {
             emailService.sendEmail(studentEmail, guardianEmail, "Student Account Created and Guardian Linked", "Welcome to our platform! \nYour password will be sent in separate email!!");
@@ -136,7 +133,6 @@ public class UserServiceImpl implements UserService {
      * @param id The unique ID of the student to retrieve.
      * @return A response containing the retrieved student's information.
      */
-    @ApiOperation("Retrieve a student by ID")
     public Response<UserResponseDTO> getStudentById(String id) {
         Response<UserResponseDTO> response = new Response<>();
         UserResponseDTO userResponseDTO = null;
@@ -159,13 +155,12 @@ public class UserServiceImpl implements UserService {
      *
      * @return A response containing a list of user information.
      */
-    @ApiOperation("Get all users")
     public Response<List<UserResponseDTO>> getAllUsers() {
         Response<List<UserResponseDTO>> response = new Response<>();
         List<UserDAO> userDAOS = userRepository.findAll();
         List<UserResponseDTO> usersList = new ArrayList<>();
         ModelMapper modelMapper = new ModelMapper();
-        userDAOS.stream().forEach(userDAO -> usersList.add(modelMapper.map(userDAO, UserResponseDTO.class)));
+        userDAOS.forEach(userDAO -> usersList.add(modelMapper.map(userDAO, UserResponseDTO.class)));
         if(usersList.isEmpty())
             response.setMeta(Meta.builder().message("DataBase is Empty").statusCode(HttpStatus.NOT_FOUND.value()).build());
         else
