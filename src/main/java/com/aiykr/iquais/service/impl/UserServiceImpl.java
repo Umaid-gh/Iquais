@@ -11,6 +11,7 @@ import com.aiykr.iquais.exception.IquaisException;
 import com.aiykr.iquais.repository.UserRepository;
 import com.aiykr.iquais.service.EmailService;
 import com.aiykr.iquais.service.UserService;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -18,6 +19,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.mail.MessagingException;
 import java.util.ArrayList;
@@ -46,6 +49,8 @@ public class UserServiceImpl implements UserService {
      * @return A response containing user details.
      * @throws IquaisException If an error occurs during user creation.
      */
+    // define levels of log
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response<UserResponseDTO> createUser(PostUserDTO postUserDTO) throws IquaisException {
         Response<UserResponseDTO> response = new Response<>();
         try {
@@ -53,35 +58,35 @@ public class UserServiceImpl implements UserService {
             String studentEmail = postUserDTO.getEmail();
             log.info("Student Email: {}", studentEmail);
 
-            List<UserDAO> studentUsers = userRepository.findAllByEmail(studentEmail);
-            log.info("Student Email from DB: {}", studentUsers);
+            Optional<UserDAO> studentUserOpt = userRepository.findByEmail(studentEmail);
 
-            boolean studentExists = studentUsers.stream()
-                    .anyMatch(user -> Objects.nonNull(user.getEmail()) && user.getEmail().equals(studentEmail));
-            if (studentExists) {
-                String existingEmail = studentUsers.get(0).getEmail();
-                log.info("Student Email {} already present in our DB", existingEmail);
-                log.info("Student {} not created", postUserDTO.getFirstName());
-                throw new IquaisException(HttpStatus.CONFLICT, "IQ002", "Student Email already present in our DB");
-            } else {
-                // Create Student
-                UserDAO studentDAO = new ModelMapper().map(postUserDTO, UserDAO.class);
-                studentDAO.setType(UserType.STUDENT.name());
-                userRepository.save(studentDAO);
-                log.info("Save New Student: {}", studentDAO);
+            UserDAO studentDAO = null;
+            if (studentUserOpt.isPresent()) {
+                String email = studentUserOpt.get().getEmail();
+
+                if (!StringUtils.isEmpty(email) && email.equalsIgnoreCase(studentEmail)) {
+                    log.info("Student Email {} already present in our DB", studentEmail);
+                    throw new IquaisException(HttpStatus.CONFLICT, "IQ002", "Student Email already present in our DB");
+                }
             }
+            // Create Student
+            studentDAO = new ModelMapper().map(postUserDTO, UserDAO.class);
+            studentDAO.setType(UserType.STUDENT.name());
+            userRepository.save(studentDAO);
+            log.info("Save New Student: {}", studentDAO);
 
             // Check if the guardian is already present by email address
             String guardianEmail = postUserDTO.getGuardianEmail();
             log.info("Guardian Email: {}", guardianEmail);
-            List<UserDAO> guardianUsers = userRepository.findAllByEmail(guardianEmail);
-            log.info("Guardian Email from DB: {}", guardianUsers);
-            boolean guardianExists = guardianUsers.stream()
-                    .anyMatch(user -> Objects.nonNull(user.getEmail()) && user.getEmail().equals(guardianEmail));
-            if (guardianExists) {
-                String existingEmail = guardianUsers.get(0).getEmail();
-                log.info("Guardian Email {} already present in our DB", existingEmail);
-            } else {
+            Optional<UserDAO> guardianUserOpt = userRepository.findByEmail(guardianEmail);
+            UserDAO guardianDao = null;
+            if (guardianUserOpt.isPresent()) {
+                String email = guardianUserOpt.get().getEmail();
+                log.info("Guardian Email from DB: {}", email);
+                if (StringUtils.isEmpty(email) && email.equalsIgnoreCase(guardianEmail))
+                    log.info("Guardian Email {} already present in our DB", guardianEmail);
+            }
+            else {
                 // Create Guardian
                 UserDAO guardianDAO = new UserDAO();
                 guardianDAO.setFirstName(postUserDTO.getGuardianFirstName());
@@ -123,7 +128,7 @@ public class UserServiceImpl implements UserService {
             // Handle exception properly in production code
             log.error("Error sending email: {}", msgEx.getMessage(), msgEx);
             // You can rethrow the exception if necessary
-            throw new EmailSendingException(HttpStatus.UNAUTHORIZED, "IQ003", "Error while sending Email");
+            throw new EmailSendingException(HttpStatus.INTERNAL_SERVER_ERROR, "IQ003", "Error while sending Email");
         }
     }
 
@@ -145,7 +150,7 @@ public class UserServiceImpl implements UserService {
         } else {
             response.setMeta(Meta.builder().statusCode(HttpStatus.NOT_FOUND.value()).message("Student Not Found in DB").build());
         }
-        log.info("User Detail: {}",userResponseDTO);
+        log.info("User Detail: {}", userResponseDTO);
         response.setData(userResponseDTO);
         return response;
     }
@@ -161,11 +166,11 @@ public class UserServiceImpl implements UserService {
         List<UserResponseDTO> usersList = new ArrayList<>();
         ModelMapper modelMapper = new ModelMapper();
         userDAOS.forEach(userDAO -> usersList.add(modelMapper.map(userDAO, UserResponseDTO.class)));
-        if(usersList.isEmpty())
+        if (usersList.isEmpty())
             response.setMeta(Meta.builder().message("DataBase is Empty").statusCode(HttpStatus.NOT_FOUND.value()).build());
         else
             response.setMeta(Meta.builder().message("Retrieval Successful").statusCode(HttpStatus.OK.value()).build());
-        log.info("Users Details: {}",usersList);
+        log.info("Users Details: {}", usersList);
         response.setData(usersList);
         return response;
     }

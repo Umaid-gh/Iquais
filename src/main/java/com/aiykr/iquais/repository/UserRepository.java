@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository interface for managing user data in the MongoDB database.
@@ -20,4 +21,6 @@ public interface UserRepository extends MongoRepository<UserDAO, ObjectId> {
      * @return A list of users matching the given email.
      */
     List<UserDAO> findAllByEmail(String email);
+
+    Optional<UserDAO> findByEmail(String studentEmail);
 }
