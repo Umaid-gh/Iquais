@@ -1,6 +1,7 @@
 package com.aiykr.iquais.service.impl;
 
 import com.aiykr.iquais.dto.request.PostUserDTO;
+import com.aiykr.iquais.dto.response.ErrorCodes;
 import com.aiykr.iquais.dto.response.Meta;
 import com.aiykr.iquais.dto.response.Response;
 import com.aiykr.iquais.dto.response.UserResponseDTO;
@@ -33,10 +34,8 @@ public class UserServiceImpl implements UserService {
 
     private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
-    private static final String ERROR_CODE_IQ001 = "IQ001";
-
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private EmailService emailService;
@@ -70,7 +69,7 @@ public class UserServiceImpl implements UserService {
             throw iqEx;
         } catch (Exception ex) {
             log.error("An exception occurred: {}", ex.getMessage(), ex);
-            throw new IquaisException(HttpStatus.INTERNAL_SERVER_ERROR, ERROR_CODE_IQ001, "Exception occurred while generating and storing in DB");
+            throw new IquaisException(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.IQ005, "Exception while storing in DB and sending Email");
         }
     }
 
@@ -87,7 +86,7 @@ public class UserServiceImpl implements UserService {
             Optional<UserDAO> studentUserOpt = userRepository.findByEmail(postUserDTO.getEmail());
             if (studentUserOpt.isPresent()) {
                 log.info("Student Email {} already present in our DB", studentUserOpt.get().getEmail());
-                throw new IquaisException(HttpStatus.CONFLICT, "IQ002", "Student Email already present in our DB");
+                throw new IquaisException(HttpStatus.CONFLICT, ErrorCodes.IQ002, "Student Email already present in our DB");
             }
             UserDAO studentDAO = modelMapper.map(postUserDTO, UserDAO.class);
             studentDAO.setType(UserType.STUDENT.name());
@@ -98,7 +97,7 @@ public class UserServiceImpl implements UserService {
             throw iqEx;
         } catch (Exception ex) {
             log.error("An exception occurred while creating student: {}", ex.getMessage(), ex);
-            throw new IquaisException(HttpStatus.INTERNAL_SERVER_ERROR, ERROR_CODE_IQ001, "Exception occurred while creating student");
+            throw new IquaisException(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.IQ001, "Exception occurred while creating student");
         }
     }
 
@@ -126,7 +125,7 @@ public class UserServiceImpl implements UserService {
             return null;
         } catch (Exception ex) {
             log.error("An exception occurred while creating guardian: {}", ex.getMessage(), ex);
-            throw new IquaisException(HttpStatus.INTERNAL_SERVER_ERROR, ERROR_CODE_IQ001, "Exception occurred while creating guardian");
+            throw new IquaisException(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.IQ001, "Exception occurred while creating guardian");
         }
     }
 
@@ -145,7 +144,7 @@ public class UserServiceImpl implements UserService {
             // Handle exception properly in production code
             log.error("Error sending email: {}", msgEx.getMessage(), msgEx);
             // You can rethrow the exception if necessary
-            throw new EmailSendingException(HttpStatus.INTERNAL_SERVER_ERROR, "IQ003", "Error while sending Email");
+            throw new EmailSendingException(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.IQ003, "Error while sending Email");
         }
     }
 
@@ -161,13 +160,13 @@ public class UserServiceImpl implements UserService {
         Optional<UserDAO> optionalUserDAO = userRepository.findById(new ObjectId(id));
         if (optionalUserDAO.isPresent()) {
             UserDAO userDAO = optionalUserDAO.get();
-            userResponseDTO = new ModelMapper().map(userDAO, UserResponseDTO.class);
+            userResponseDTO = modelMapper.map(userDAO, UserResponseDTO.class);
             response.setData(userResponseDTO);
             log.info("User {} present in our DB", userResponseDTO.getFirstName());
-            response.setMeta(Meta.builder().statusCode(HttpStatus.FOUND.value()).message("Student Retrieved Successfully").build());
+            response.setMeta(Meta.builder().statusCode(HttpStatus.FOUND.value()).message("User Retrieved Successfully").build());
         } else {
             log.info("User is not present in our DB");
-            response.setMeta(Meta.builder().statusCode(HttpStatus.NOT_FOUND.value()).message("Student Not Found in DB").build());
+            response.setMeta(Meta.builder().statusCode(HttpStatus.NOT_FOUND.value()).message("User Not Found in DB").build());
         }
         log.info("User Detail: {}", userResponseDTO);
         response.setData(userResponseDTO);
@@ -183,8 +182,7 @@ public class UserServiceImpl implements UserService {
         Response<List<UserResponseDTO>> response = new Response<>();
         List<UserDAO> userDAOS = userRepository.findAll();
         List<UserResponseDTO> usersList = new ArrayList<>();
-        this.modelMapper = new ModelMapper();
-        userDAOS.forEach(userDAO -> usersList.add(modelMapper.map(userDAO, UserResponseDTO.class)));
+        userDAOS.forEach(userDAO -> usersList.add(this.modelMapper.map(userDAO, UserResponseDTO.class)));
         if (usersList.isEmpty())
             response.setMeta(Meta.builder().message("DataBase is Empty").statusCode(HttpStatus.NOT_FOUND.value()).build());
         else

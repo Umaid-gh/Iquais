@@ -35,7 +35,7 @@ public class EmailServiceImpl implements EmailService {
      * @throws IquaisException    If there is a custom application-specific exception related to sending emails.
      */
     @Override
-    public void sendEmail(String to, String cc, String subject, String content) throws MessagingException, IquaisException {
+    public void sendEmail(String to, String cc, String subject, String content) throws IquaisException {
         MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message);
         try {
@@ -46,7 +46,7 @@ public class EmailServiceImpl implements EmailService {
                 javaMailSender.send(message);
                 log.info("Email sent to {} and Guardian {}", to, cc);
         } catch (MessagingException msgEx) {
-            throw new IquaisException(HttpStatus.UNAUTHORIZED, "IQ003", "Error while sending Email");
+            throw new IquaisException(HttpStatus.INTERNAL_SERVER_ERROR, "IQ003", "Error while sending Email");
         }
     }
 }
