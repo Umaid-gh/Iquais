@@ -26,6 +26,16 @@ public class ErrorCodes {
      */
     public static final String IQ005 = "IQ005";
 
+    /**
+     * Error code If User not Found in DB.
+     */
+    public static final String IQ006 = "IQ006";
+
+    /**
+     * Invalid Credential
+     */
+    public static final String IQ007 = "IQ007";
+
     // Can continue adding more error codes as needed for your application.
 
     /**

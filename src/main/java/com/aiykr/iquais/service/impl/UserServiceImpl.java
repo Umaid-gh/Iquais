@@ -9,7 +9,6 @@ import com.aiykr.iquais.entity.UserDAO;
 import com.aiykr.iquais.entity.UserType;
 import com.aiykr.iquais.exception.EmailSendingException;
 import com.aiykr.iquais.exception.IquaisException;
-import com.aiykr.iquais.repository.IUserRepository;
 import com.aiykr.iquais.service.IEmailService;
 import com.aiykr.iquais.service.IUserService;
 import org.bson.types.ObjectId;
@@ -37,14 +36,13 @@ public class UserServiceImpl implements IUserService {
 
     private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
-//    private static final String ALLOWED_CHARACTERS = "[A-Za-z0-9!@#$%^&*()_+]";
     private static final String ALLOWED_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
 
     String randomPassword = null;
     private static final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
-    private IUserRepository userRepository;
+    private com.aiykr.iquais.repository.IUserRepository userRepository;
 
     @Autowired
     private IEmailService emailService;
