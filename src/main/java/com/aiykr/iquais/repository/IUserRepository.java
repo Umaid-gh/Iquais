@@ -5,7 +5,6 @@ import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -13,14 +12,6 @@ import java.util.Optional;
  */
 @Repository
 public interface IUserRepository extends MongoRepository<UserDAO, ObjectId> {
-
-    /**
-     * Retrieves a list of users based on the provided email address.
-     *
-     * @param email The email address to search for.
-     * @return A list of users matching the given email.
-     */
-    List<UserDAO> findAllByEmail(String email);
 
     /**
      * Find a user by their email address.
