@@ -12,7 +12,7 @@ import java.util.Optional;
  * Repository interface for managing user data in the MongoDB database.
  */
 @Repository
-public interface UserRepository extends MongoRepository<UserDAO, ObjectId> {
+public interface IUserRepository extends MongoRepository<UserDAO, ObjectId> {
 
     /**
      * Retrieves a list of users based on the provided email address.
@@ -22,5 +22,13 @@ public interface UserRepository extends MongoRepository<UserDAO, ObjectId> {
      */
     List<UserDAO> findAllByEmail(String email);
 
+    /**
+     * Find a user by their email address.
+     *
+     * This method searches for a user in the database using the provided email address.
+     *
+     * @param studentEmail The email address of the user to be found.
+     * @return An Optional containing a UserDAO if a matching user is found, or an empty Optional if no match is found.
+     */
     Optional<UserDAO> findByEmail(String studentEmail);
 }

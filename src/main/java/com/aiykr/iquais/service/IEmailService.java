@@ -7,7 +7,7 @@ import javax.mail.MessagingException;
 /**
  * Service interface for sending emails.
  */
-public interface EmailService {
+public interface IEmailService {
 
     /**
      * Sends an email with the provided details.

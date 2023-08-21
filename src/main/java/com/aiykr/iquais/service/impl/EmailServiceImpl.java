@@ -1,7 +1,7 @@
 package com.aiykr.iquais.service.impl;
 
 import com.aiykr.iquais.exception.IquaisException;
-import com.aiykr.iquais.service.EmailService;
+import com.aiykr.iquais.service.IEmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ import javax.mail.internet.MimeMessage;
  * Implementation class for sending emails.
  */
 @Service
-public class EmailServiceImpl implements EmailService {
+public class EmailServiceImpl implements IEmailService {
 
     private static final Logger log = LoggerFactory.getLogger(EmailServiceImpl.class);
 

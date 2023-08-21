@@ -9,9 +9,9 @@ import com.aiykr.iquais.entity.UserDAO;
 import com.aiykr.iquais.entity.UserType;
 import com.aiykr.iquais.exception.EmailSendingException;
 import com.aiykr.iquais.exception.IquaisException;
-import com.aiykr.iquais.repository.UserRepository;
-import com.aiykr.iquais.service.EmailService;
-import com.aiykr.iquais.service.UserService;
+import com.aiykr.iquais.repository.IUserRepository;
+import com.aiykr.iquais.service.IEmailService;
+import com.aiykr.iquais.service.IUserService;
 import org.bson.types.ObjectId;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -30,15 +30,15 @@ import java.util.Optional;
  * Implementation class for managing user-related operations.
  */
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements IUserService {
 
     private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Autowired
-    private UserRepository userRepository;
+    private IUserRepository userRepository;
 
     @Autowired
-    private EmailService emailService;
+    private IEmailService emailService;
 
     @Autowired
     private ModelMapper modelMapper;

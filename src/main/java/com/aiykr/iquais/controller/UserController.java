@@ -4,7 +4,7 @@ import com.aiykr.iquais.dto.request.PostUserDTO;
 import com.aiykr.iquais.dto.response.Response;
 import com.aiykr.iquais.dto.response.UserResponseDTO;
 import com.aiykr.iquais.exception.IquaisException;
-import com.aiykr.iquais.service.UserService;
+import com.aiykr.iquais.service.IUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ public class UserController {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
     @Autowired
-    UserService userService;
+    IUserService userService;
 
     /**
      * Retrieves a list of all users.

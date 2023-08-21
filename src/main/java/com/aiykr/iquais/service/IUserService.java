@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Service interface for managing user-related operations.
  */
-public interface UserService {
+public interface IUserService {
 
     /**
      * Creates a new user based on the provided information.

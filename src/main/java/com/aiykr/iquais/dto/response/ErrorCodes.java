@@ -33,7 +33,10 @@ public class ErrorCodes {
      * This class should only be used to access error code constants.
      */
     private ErrorCodes() {
-        // This constructor is empty because its sole purpose is to prevent instantiation.
+        //Utility classes, which are collections of static members, are not meant to be instantiated.
+        //Even abstract utility classes, which can be extended, should not have public constructors.
+        //Java adds an implicit public constructor to every class which does not define at least one explicitly.
+        // Hence, at least one non-public constructor should be defined.
     }
 }
 
