@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.websocket.server.PathParam;
 import java.util.List;
 
 /**
@@ -26,18 +25,6 @@ public class UserController {
 
     @Autowired
     IUserService userService;
-
-    /**
-     * Retrieves a list of all users.
-     *
-     * @return A ResponseEntity containing the response with the list of users.
-     */
-    @GetMapping("/users/all")
-    public ResponseEntity<Response<List<UserResponseDTO>>> getAllUsers() {
-        log.info("Fetch All Users API");
-        Response<List<UserResponseDTO>> response = userService.getAllUsers();
-        return ResponseEntity.status(response.getMeta().getStatusCode()).body(response);
-    }
 
     /**
      * Creates a new student user.
@@ -66,14 +53,23 @@ public class UserController {
         return ResponseEntity.status(response.getMeta().getStatusCode()).body(response);
     }
 
-	@GetMapping("/users/getByPage")
-	public ResponseEntity<Response<List<UserResponseDTO>>> getUsersByPagination(
+    /**
+     * Retrieves a list of all users by page.
+     *
+     * @param page The number of page to retrieve.
+     * @param size Size of the page needed to retrieve.
+     * @param sortBy The unique ID of the users.
+     * @return A ResponseEntity containing the response with the list of users.
+     */
+	@GetMapping("/users/all")
+	public ResponseEntity<Response<List<UserResponseDTO>>> getUsers(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size,
 			@RequestParam(defaultValue = "id") String sortBy,
 			@RequestParam(defaultValue = "asc") String sortOrder){
 
-		Response<List<UserResponseDTO>> response = userService.getAllUsersByPagination(page, size, sortBy, sortOrder);
+        log.info("Get Student data by Page");
+		Response<List<UserResponseDTO>> response = userService.getAllUsers(page, size, sortBy, sortOrder);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 }

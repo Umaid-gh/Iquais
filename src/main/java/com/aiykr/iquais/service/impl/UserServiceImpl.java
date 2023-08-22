@@ -180,62 +180,41 @@ public class UserServiceImpl implements IUserService {
     }
 
     /**
-     * Retrieves a list of all users from the database.
+     * Retrieves a list of all users from the database by page.
      *
      * @return A response containing a list of user information.
      */
-    public Response<List<UserResponseDTO>> getAllUsers() {
-        Response<List<UserResponseDTO>> response = new Response<>();
-        List<UserDAO> userDAOS = userRepository.findAll();
-        List<UserResponseDTO> usersList = new ArrayList<>();
-        userDAOS.forEach(userDAO -> usersList.add(this.modelMapper.map(userDAO, UserResponseDTO.class)));
-        if (usersList.isEmpty())
-            response.setMeta(Meta.builder().message("DataBase is Empty").statusCode(HttpStatus.NOT_FOUND.value()).build());
-        else
-            response.setMeta(Meta.builder().message("Retrieval Successful").statusCode(HttpStatus.OK.value()).build());
-        log.info("Total Users: {}",usersList.size());
-        log.info("Users Details: {}", usersList);
-        response.setData(usersList);
-        return response;
-    }
-
-    public Response<List<UserResponseDTO>> getAllUsersByPagination(int page, int size, String sortBy, String sortOrder) {
+    public Response<List<UserResponseDTO>> getAllUsers(int page, int size, String sortBy, String sortOrder) {
         try {
             Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
-            Pageable pageable = PageRequest.of(page - 1, size, sort);
+            Pageable pageable = PageRequest.of(page, size, sort);
             Page<UserDAO> userPage = userRepository.findAll(pageable);
 
             if (!userPage.hasContent()) {
-                // Database is present but empty
                 Response<List<UserResponseDTO>> emptyResponse = new Response<>();
                 Meta emptyMeta = Meta.builder().message("Database is empty").statusCode(HttpStatus.NOT_FOUND.value()).build();
                 emptyResponse.setMeta(emptyMeta);
                 return emptyResponse;
             } else {
-                // Database is present and has data
                 List<UserResponseDTO> usersList = userPage.getContent().stream()
-                        .map(userDAO -> new ModelMapper().map(userDAO, UserResponseDTO.class))
+                        .map(userDAO -> modelMapper.map(userDAO, UserResponseDTO.class))
                         .collect(Collectors.toList());
 
                 Response<List<UserResponseDTO>> response = new Response<>();
                 Meta meta = Meta.builder().message("Retrieval Successful").statusCode(HttpStatus.OK.value()).build();
+                log.info("Total Users: {}",usersList.size());
+                log.info("Users Details: {}", usersList);
                 response.setMeta(meta);
                 response.setData(usersList);
 
                 return response;
             }
         } catch (DataAccessException ex) {
-            // Log the exception details for troubleshooting
-            ex.printStackTrace();
-
             Response<List<UserResponseDTO>> errorResponse = new Response<>();
             Meta meta = Meta.builder().message("Database not found").statusCode(HttpStatus.NOT_FOUND.value()).build();
             errorResponse.setMeta(meta);
             return errorResponse;
         } catch (Exception ex) {
-            // Log the exception details for troubleshooting
-            ex.printStackTrace();
-
             Response<List<UserResponseDTO>> errorResponse = new Response<>();
             Meta meta = Meta.builder().message("An error occurred: " + ex.getMessage()).statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value()).build();
             errorResponse.setMeta(meta);
