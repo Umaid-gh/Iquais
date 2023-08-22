@@ -14,4 +14,5 @@ public interface UserService {
     ResponseEntity<Response<UserResponseDTO>> getStudentById(String id);
 
     public ResponseEntity<Response<List<UserResponseDTO>>> getAllUsers();
+    public Response<List<UserResponseDTO>> getAllUsersByPagination(int page, int size, String sortBy, String sortOrder);
 }
