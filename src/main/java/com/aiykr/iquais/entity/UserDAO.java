@@ -7,26 +7,89 @@ import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+/**
+ * Data Access Object (DAO) class representing user information in the MongoDB collection.
+ */
 @Document(collection = "users")
 @TypeAlias("user")
 @Data
 public class UserDAO {
+
+    /**
+     * The unique ID of the user.
+     */
     @Id
     private ObjectId id;
-    String firstName;
-    String lastName;
+
+    /**
+     * The first name of the user.
+     */
+    private String firstName;
+
+    /**
+     * The last name of the user.
+     */
+    private String lastName;
+
+    /**
+     * The email address of the user.
+     */
     @Indexed
-    String email;
-    String phoneNumber;
-    String type;
-    String status = "active";
-    String grade;
-    String dob;
-    String institutionName;
-    String location;
-    String guardianFirstName;
-    String guardianLastName;
+    private String email;
+
+    /**
+     * The phone number of the user.
+     */
+    private String phoneNumber;
+
+    /**
+     * The type of the user (e.g., student, guardian).
+     */
+    private String type;
+
+    /**
+     * The status of the user.
+     */
+    private String status = "active";
+
+    /**
+     * The grade of the user.
+     */
+    private String grade;
+
+    /**
+     * The date of birth of the user.
+     */
+    private String dob;
+
+    /**
+     * The name of the institution the user belongs to.
+     */
+    private String institutionName;
+
+    /**
+     * The location of the user.
+     */
+    private String location;
+
+    /**
+     * The first name of the guardian associated with the user.
+     */
+    private String guardianFirstName;
+
+    /**
+     * The last name of the guardian associated with the user.
+     */
+    private String guardianLastName;
+
+    /**
+     * The email address of the guardian associated with the user.
+     */
     @Indexed
-    String guardianEmail;
-    String guardianPhoneNumber;
+    private String guardianEmail;
+
+    /**
+     * The phone number of the guardian associated with the user.
+     */
+    private String guardianPhoneNumber;
 }
