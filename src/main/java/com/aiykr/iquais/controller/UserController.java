@@ -56,20 +56,20 @@ public class UserController {
     /**
      * Retrieves a list of all users by page.
      *
-     * @param page The number of page to retrieve.
-     * @param size Size of the page needed to retrieve.
+     * @param page   The number of page to retrieve.
+     * @param size   Size of the page needed to retrieve.
      * @param sortBy The unique ID of the users.
      * @return A ResponseEntity containing the response with the list of users.
      */
-	@GetMapping("/users/all")
-	public ResponseEntity<Response<List<UserResponseDTO>>> getUsers(
-			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "10") int size,
-			@RequestParam(defaultValue = "id") String sortBy,
-			@RequestParam(defaultValue = "asc") String sortOrder){
+    @GetMapping("/users/all")
+    public ResponseEntity<Response<List<UserResponseDTO>>> getUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortOrder) {
 
         log.info("Get Student data by Page");
-		Response<List<UserResponseDTO>> response = userService.getAllUsers(page, size, sortBy, sortOrder);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
-	}
+        Response<List<UserResponseDTO>> response = userService.getAllUsers(page, size, sortBy, sortOrder);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }
