@@ -185,40 +185,30 @@ public class UserServiceImpl implements IUserService {
      * @return A response containing a list of user information.
      */
     public Response<List<UserResponseDTO>> getAllUsers(int page, int size, String sortBy, String sortOrder) {
+        Response<List<UserResponseDTO>> response = new Response<>(); // Create the response object
+
         try {
             Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
             Pageable pageable = PageRequest.of(page, size, sort);
             Page<UserDAO> userPage = userRepository.findAll(pageable);
 
             if (!userPage.hasContent()) {
-                Response<List<UserResponseDTO>> emptyResponse = new Response<>();
                 Meta emptyMeta = Meta.builder().message("Database is empty").statusCode(HttpStatus.NOT_FOUND.value()).build();
-                emptyResponse.setMeta(emptyMeta);
-                return emptyResponse;
-            } else {
+                response.setMeta(emptyMeta);
+            }
                 List<UserResponseDTO> usersList = userPage.getContent().stream()
                         .map(userDAO -> modelMapper.map(userDAO, UserResponseDTO.class))
                         .collect(Collectors.toList());
 
-                Response<List<UserResponseDTO>> response = new Response<>();
                 Meta meta = Meta.builder().message("Retrieval Successful").statusCode(HttpStatus.OK.value()).build();
-                log.info("Total Users: {}",usersList.size());
+                log.info("Total Users: {}", usersList.size());
                 log.info("Users Details: {}", usersList);
-                response.setMeta(meta);
                 response.setData(usersList);
-
-                return response;
-            }
-        } catch (DataAccessException ex) {
-            Response<List<UserResponseDTO>> errorResponse = new Response<>();
-            Meta meta = Meta.builder().message("Database not found").statusCode(HttpStatus.NOT_FOUND.value()).build();
-            errorResponse.setMeta(meta);
-            return errorResponse;
+                response.setMeta(meta);
         } catch (Exception ex) {
-            Response<List<UserResponseDTO>> errorResponse = new Response<>();
             Meta meta = Meta.builder().message("An error occurred: " + ex.getMessage()).statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value()).build();
-            errorResponse.setMeta(meta);
-            return errorResponse;
+            response.setMeta(meta);
         }
+        return response;
     }
 }
