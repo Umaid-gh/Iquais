@@ -179,9 +179,13 @@ public class UserServiceImpl implements IUserService {
     }
 
     /**
-     * Retrieves a list of all users from the database by page.
+     * Retrieves a list of users based on pagination and sorting criteria.
      *
-     * @return A response containing a list of user information.
+     * @param page      The page number for pagination (0-based index).
+     * @param size      The number of items per page.
+     * @param sortBy    The field by which to sort the results.
+     * @param sortOrder The sorting order, either "asc" (ascending) or "desc" (descending).
+     * @return A ResponseEntity containing the response with user data and appropriate metadata.
      */
     public Response<List<UserResponseDTO>> getAllUsers(int page, int size, String sortBy, String sortOrder) {
         Response<List<UserResponseDTO>> response = new Response<>(); // Create the response object

@@ -61,7 +61,7 @@ public class UserController {
      * @param sortBy The unique ID of the users.
      * @return A ResponseEntity containing the response with the list of users.
      */
-    @GetMapping("/users/all")
+    @GetMapping("/users")
     public ResponseEntity<Response<List<UserResponseDTO>>> getUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -70,6 +70,6 @@ public class UserController {
 
         log.info("Get Student data by Page");
         Response<List<UserResponseDTO>> response = userService.getAllUsers(page, size, sortBy, sortOrder);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.status(response.getMeta().getStatusCode()).body(response);
     }
 }
