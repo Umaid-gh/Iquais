@@ -18,21 +18,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.mail.MessagingException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 /**
- * Implementation class for managing user-related operations.
+ * Service for managing user-related operations, including creating students and guardians.
  */
 @Service
 public class UserServiceImpl implements IUserService {
 
     private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
+
+//    private static final String ALLOWED_CHARACTERS = "[A-Za-z0-9!@#$%^&*()_+]";
+    private static final String ALLOWED_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
+
+    String randomPassword = null;
+    private static final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
     private IUserRepository userRepository;
@@ -59,7 +68,8 @@ public class UserServiceImpl implements IUserService {
             UserDAO guardianDAO = createGuardian(postUserDTO);
             log.info("studentDAO : {}", studentDAO);
             log.info("guardianDAO : {}", guardianDAO);
-            sendEmails(postUserDTO.getEmail(), postUserDTO.getGuardianEmail());
+
+            sendEmails(postUserDTO.getEmail(), postUserDTO.getGuardianEmail(),randomPassword);
 
             UserResponseDTO userResponseDTO = modelMapper.map(postUserDTO, UserResponseDTO.class);
             response.setMeta(Meta.builder().statusCode(HttpStatus.CREATED.value()).message("Student Created Successfully").build());
@@ -71,6 +81,20 @@ public class UserServiceImpl implements IUserService {
             log.error("An exception occurred: {}", ex.getMessage(), ex);
             throw new IquaisException(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.IQ005, "Exception while storing in DB and sending Email");
         }
+    }
+
+    /**
+     * Generates a random strong password.
+     *
+     * @return A randomly generated password.
+     */
+    public static String generateRandomPassword() {
+        Random random = new SecureRandom();
+        StringBuilder password = new StringBuilder(12);
+        for (int i = 0; i < 12; i++) {
+            password.append(ALLOWED_CHARACTERS.charAt(random.nextInt(ALLOWED_CHARACTERS.length())));
+        }
+        return password.toString();
     }
 
     /**
@@ -88,8 +112,18 @@ public class UserServiceImpl implements IUserService {
                 log.info("Student Email {} already present in our DB", studentUserOpt.get().getEmail());
                 throw new IquaisException(HttpStatus.CONFLICT, ErrorCodes.IQ002, "Student Email already present in our DB");
             }
+
+            // Generate a random strong password
+            randomPassword = generateRandomPassword();
+
+            // Encode the password
+            String encodedPassword = passwordEncoder.encode(randomPassword);
+
             UserDAO studentDAO = modelMapper.map(postUserDTO, UserDAO.class);
             studentDAO.setType(UserType.STUDENT.name());
+            // Save the encoded password
+            studentDAO.setPassword(encodedPassword);
+
             userRepository.save(studentDAO);
             log.info("StudentDAO saved in DB");
             return studentDAO;
@@ -132,13 +166,14 @@ public class UserServiceImpl implements IUserService {
     /**
      * Sends welcome emails to the student and guardian after account creation.
      *
-     * @param studentEmail  The email address of the student.
-     * @param guardianEmail The email address of the guardian.
+     * @param studentEmail   The email address of the student.
+     * @param guardianEmail  The email address of the guardian.
+     * @param randomPassword The randomly generated password.
      * @throws IquaisException If an error occurs while sending the email.
      */
-    private void sendEmails(String studentEmail, String guardianEmail) throws IquaisException {
+    private void sendEmails(String studentEmail, String guardianEmail, String randomPassword) throws IquaisException {
         try {
-            emailService.sendEmail(studentEmail, guardianEmail, "Student Account Created", "Welcome to our platform! \nGuardian Linked and your password will be sent in separate email!!");
+            emailService.sendEmail(studentEmail, guardianEmail,  "Student Account Created", getContent(randomPassword));
             log.info("Email sent successfully!!");
         } catch (MessagingException msgEx) {
             // Handle exception properly in production code
@@ -147,6 +182,17 @@ public class UserServiceImpl implements IUserService {
             throw new EmailSendingException(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.IQ003, "Error while sending Email");
         }
     }
+
+    /**
+     * Generates the content for a welcome email sent to a newly created student, including their randomly generated password.
+     *
+     * @param randomPassword The randomly generated password for the student.
+     * @return The content of the welcome email.
+     */
+    private String getContent(String randomPassword) {
+        return "Welcome to our platform! \nStudent Account has been created and Guardian Account has been Linked.\nPassword for student: " + randomPassword;
+    }
+
 
     /**
      * Retrieves a student's information based on the provided ID.

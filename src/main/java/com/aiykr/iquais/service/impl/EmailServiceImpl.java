@@ -31,8 +31,7 @@ public class EmailServiceImpl implements IEmailService {
      * @param cc      The CC (carbon copy) email address.
      * @param subject The subject of the email.
      * @param content The content of the email.
-     * @throws MessagingException If an error occurs while sending the email.
-     * @throws IquaisException    If there is a custom application-specific exception related to sending emails.
+     * @throws IquaisException If an error occurs while sending the email.
      */
     @Override
     public void sendEmail(String to, String cc, String subject, String content) throws IquaisException {

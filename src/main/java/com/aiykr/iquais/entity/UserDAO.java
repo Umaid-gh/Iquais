@@ -1,11 +1,16 @@
 package com.aiykr.iquais.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import javax.validation.constraints.Email;
+import javax.validation.constraints.Pattern;
+import java.time.LocalDate;
 
 /**
  * Data Access Object (DAO) class representing user information in the MongoDB collection.
@@ -34,8 +39,15 @@ public class UserDAO {
     /**
      * The email address of the user.
      */
-    @Indexed
+    @Email(message = "Please provide a valid email address")
+    @Indexed(unique = true)
     private String email;
+
+    /**
+     * The password of the user generated randomly.
+     */
+    @JsonIgnore
+    private String password;
 
     /**
      * The phone number of the user.
@@ -60,7 +72,9 @@ public class UserDAO {
     /**
      * The date of birth of the user.
      */
-    private String dob;
+    // Use LocalDate for date of birth
+    @Pattern(regexp = "^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-[0-9]{4}$", message = "Date of birth should be in dd-mm-yyyy format")
+    private LocalDate dob;
 
     /**
      * The name of the institution the user belongs to.
@@ -86,6 +100,7 @@ public class UserDAO {
      * The email address of the guardian associated with the user.
      */
     @Indexed
+    @Email(message = "Please provide a valid guardian email address")
     private String guardianEmail;
 
     /**
