@@ -5,6 +5,8 @@ import com.aiykr.iquais.dto.response.Response;
 import com.aiykr.iquais.dto.response.UserResponseDTO;
 import com.aiykr.iquais.exception.IquaisException;
 import com.aiykr.iquais.service.IUserService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/v1")
+@Api(tags = "User API", description = "Endpoints for managing user-related operations")
 public class UserController {
 
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
@@ -30,7 +33,8 @@ public class UserController {
      *
      * @return A ResponseEntity containing the response with the list of users.
      */
-    @GetMapping("/users/all")
+    @GetMapping("/users")
+    @ApiOperation("Get a list of all users")
     public ResponseEntity<Response<List<UserResponseDTO>>> getAllUsers() {
         log.info("Fetch All Users API");
         Response<List<UserResponseDTO>> response = userService.getAllUsers();
@@ -44,7 +48,8 @@ public class UserController {
      * @return A ResponseEntity containing the response with the created student details.
      * @throws IquaisException If an error occurs during student creation.
      */
-    @PostMapping("/users/student")
+    @PostMapping("/user")
+    @ApiOperation("Create a new student user")
     public ResponseEntity<Response<UserResponseDTO>> createStudent(@RequestBody PostUserDTO postUserDTO) throws IquaisException {
         log.info("Create New Student API");
         Response<UserResponseDTO> response = userService.createUser(postUserDTO);
@@ -57,7 +62,8 @@ public class UserController {
      * @param id The unique ID of the user to retrieve.
      * @return A ResponseEntity containing the response with the retrieved user details.
      */
-    @GetMapping("/users/{id}")
+    @GetMapping("/user/{id}")
+    @ApiOperation("Get a user by Id")
     public ResponseEntity<Response<UserResponseDTO>> getStudentById(@PathVariable String id) {
         log.info("Get Student by ID API");
         Response<UserResponseDTO> response = userService.getStudentById(id);
