@@ -1,5 +1,6 @@
 package com.aiykr.iquais.dto.response;
 
+import lombok.Builder;
 import lombok.Data;
 
 /**

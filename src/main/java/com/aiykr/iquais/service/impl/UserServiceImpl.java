@@ -187,30 +187,29 @@ public class UserServiceImpl implements IUserService {
      * @param sortOrder The sorting order, either "asc" (ascending) or "desc" (descending).
      * @return A ResponseEntity containing the response with user data and appropriate metadata.
      */
-    public Response<List<UserResponseDTO>> getAllUsers(int page, int size, String sortBy, String sortOrder) {
+    public Response<List<UserResponseDTO>> getAllUsers(int page, int size, String sortBy, String sortOrder) throws IquaisException {
         Response<List<UserResponseDTO>> response = new Response<>(); // Create the response object
-
         try {
             Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
             Pageable pageable = PageRequest.of(page, size, sort);
             Page<UserDAO> userPage = userRepository.findAll(pageable);
 
             if (!userPage.hasContent()) {
-                Meta emptyMeta = Meta.builder().message("Database is empty").statusCode(HttpStatus.NOT_FOUND.value()).build();
-                response.setMeta(emptyMeta);
+                throw new IquaisException(HttpStatus.NOT_FOUND, ErrorCodes.IQ006, "No data found for the search string");
             }
-                List<UserResponseDTO> usersList = userPage.getContent().stream()
-                        .map(userDAO -> modelMapper.map(userDAO, UserResponseDTO.class))
-                        .collect(Collectors.toList());
+            List<UserResponseDTO> usersList = userPage.getContent().stream()
+                    .map(userDAO -> modelMapper.map(userDAO, UserResponseDTO.class))
+                    .collect(Collectors.toList());
 
-                Meta meta = Meta.builder().message("Retrieval Successful").statusCode(HttpStatus.OK.value()).build();
-                log.info("Total Users: {}", usersList.size());
-                log.info("Users Details: {}", usersList);
-                response.setData(usersList);
-                response.setMeta(meta);
-        } catch (Exception ex) {
-            Meta meta = Meta.builder().message("An error occurred: " + ex.getMessage()).statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value()).build();
+            Meta meta = Meta.builder().message("Retrieval Successful").statusCode(HttpStatus.OK.value()).build();
+            log.info("Total Users: {}", usersList.size());
+            log.info("Users Details: {}", usersList);
+            response.setData(usersList);
             response.setMeta(meta);
+        } catch (DataAccessException ex){
+            throw new IquaisException(HttpStatus.NOT_FOUND, ErrorCodes.IQ006, "No data found for the search string");
+        } catch (Exception ex) {
+            throw new IquaisException(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.IQ007, "Internal Error");
         }
         return response;
     }

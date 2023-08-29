@@ -35,6 +35,6 @@ public interface IUserService {
      * @return A response containing a list of user information.
      */
 
-    public Response<List<UserResponseDTO>> getAllUsers(int page, int size, String sortBy, String sortOrder);
+    public Response<List<UserResponseDTO>> getAllUsers(int page, int size, String sortBy, String sortOrder) throws IquaisException;
 }
 
