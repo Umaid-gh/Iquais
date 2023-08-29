@@ -10,7 +10,6 @@ import org.springframework.context.annotation.ComponentScan;
  * Main application class for the Iquais application.
  */
 @SpringBootApplication
-@ComponentScan
 public class IquaisApplication {
 
 	/**
