@@ -114,9 +114,8 @@ public class UserServiceImpl implements IUserService {
         // Check if student already exists
         try {
             Optional<UserDAO> studentUserOpt = userRepository.findByEmail(postUserDTO.getEmail());
-            UserDAO studentUser = null;
             if (studentUserOpt.isPresent()) {
-                studentUser = studentUserOpt.get();
+                UserDAO studentUser = studentUserOpt.get();
                 if (ACTIVE_STATUS.equals(studentUser.getStatus())) {
                     log.info("Student Email {} is already present and active in our DB", studentUser.getEmail());
                     throw new IquaisException(HttpStatus.CONFLICT, ErrorCodes.IQ002, "Student Email already present and active in our DB");
@@ -235,7 +234,7 @@ public class UserServiceImpl implements IUserService {
      * @return A response containing the retrieved student's information.
      */
     public Response<UserResponseDTO> getStudentById(String id) {
-        UserResponseDTO userResponseDTO = null;
+        UserResponseDTO userResponseDTO;
         Optional<UserDAO> optionalUserDAO = userRepository.findById(new ObjectId(id));
         if (optionalUserDAO.isPresent()) {
             UserDAO userDAO = optionalUserDAO.get();
@@ -252,6 +251,7 @@ public class UserServiceImpl implements IUserService {
                     .build();
         }
     }
+
 
     /**
      * Retrieves a list of users based on pagination and sorting criteria.
@@ -296,9 +296,8 @@ public class UserServiceImpl implements IUserService {
      * @return A response containing user information.
      * @throws IquaisException If an error occurs during the deletion process.
      */
-    @Override
     public Response<UserResponseDTO> deleteStudentByEmail(String email) throws IquaisException {
-        UserResponseDTO userResponseDTO = null;
+        UserResponseDTO userResponseDTO;
         Optional<UserDAO> optionalUserDAO = userRepository.findByEmail(email);
         if (optionalUserDAO.isPresent()) {
             UserDAO userDAO = optionalUserDAO.get();

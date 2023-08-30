@@ -70,6 +70,7 @@ public class UserController {
      * @throws IquaisException If an error occurs while retrieving the users.
      */
     @GetMapping("/users")
+    @ApiOperation("Fetch All users")
     public ResponseEntity<Response<List<UserResponseDTO>>> getUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -89,6 +90,7 @@ public class UserController {
      * @throws IquaisException If an error occurs during the deletion process.
      */
     @DeleteMapping("/user/{email}")
+    @ApiOperation("Delete a student user")
     public ResponseEntity<Response<UserResponseDTO>> deleteStudentByEmail(@PathVariable String email) throws IquaisException {
         log.info("Endpoint: Delete Student by Email");
         Response<UserResponseDTO> response = userService.deleteStudentByEmail(email);
