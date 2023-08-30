@@ -48,7 +48,8 @@ public class UserServiceImpl implements IUserService {
 
     private static final String ACTIVE_STATUS = "active";
 
-    String randomPassword = null;
+    // Generate a random strong password
+    private String generatedPassword = generateRandomPassword();
 
     @Autowired
     private IUserRepository userRepository;
@@ -74,7 +75,7 @@ public class UserServiceImpl implements IUserService {
             log.info("studentDAO : {}", studentDAO);
             log.info("guardianDAO : {}", guardianDAO);
 
-            sendEmails(postUserDTO.getEmail(), postUserDTO.getGuardianEmail(), randomPassword);
+            sendEmails(postUserDTO.getEmail(), postUserDTO.getGuardianEmail(), generatedPassword);
 
             UserResponseDTO userResponseDTO = modelMapper.map(postUserDTO, UserResponseDTO.class);
             return Response.<UserResponseDTO>builder()
@@ -127,9 +128,6 @@ public class UserServiceImpl implements IUserService {
                 }
             }
 
-            // Generate a random strong password
-            String generatedPassword = generateRandomPassword();
-
             // Encode the password
             String encodedPassword = passwordEncoder.encode(generatedPassword);
 
@@ -158,7 +156,6 @@ public class UserServiceImpl implements IUserService {
 
     /**
      * Checks if a password is already present in the database.
-     *
      * This method queries the database to determine if a user with the specified encoded password exists.
      *
      * @param password The encoded password to check for in the database.
