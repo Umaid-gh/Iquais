@@ -1,7 +1,9 @@
 package com.aiykr.iquais.dto.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Data class representing the API response structure containing data and metadata.
@@ -9,6 +11,9 @@ import lombok.Data;
  * @param <T> The type of data contained in the response.
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Response<T> {
 
 	/**
