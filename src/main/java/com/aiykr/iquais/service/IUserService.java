@@ -22,19 +22,31 @@ public interface IUserService {
     Response<UserResponseDTO> createUser(PostUserDTO postUserDTO) throws IquaisException;
 
     /**
-     * Retrieves a student's information based on the provided ID.
+     * Retrieves a user's information based on the provided ID.
      *
-     * @param id The unique ID of the student to retrieve.
-     * @return A response containing the retrieved student's information.
+     * @param id The unique ID of the user to retrieve.
+     * @return A response containing the retrieved user's information.
      */
     Response<UserResponseDTO> getStudentById(String id);
 
     /**
-     * Retrieves a list of all users.
+     * Retrieves a list of all users by page.
      *
+     * @param page      The page number to retrieve.
+     * @param size      The number of records per page.
+     * @param sortBy    The field to sort by.
+     * @param sortOrder The sorting order (asc or desc).
      * @return A response containing a list of user information.
+     * @throws IquaisException If an error occurs while retrieving the users.
      */
+    Response<List<UserResponseDTO>> getAllUsers(int page, int size, String sortBy, String sortOrder) throws IquaisException;
 
-    public Response<List<UserResponseDTO>> getAllUsers(int page, int size, String sortBy, String sortOrder) throws IquaisException;
+    /**
+     * Soft Deletes a user by email address.
+     *
+     * @param email The email address of the user to delete.
+     * @return A response containing user information.
+     * @throws IquaisException If an error occurs during the deletion process.
+     */
+    Response<UserResponseDTO> deleteStudentByEmail(String email) throws IquaisException;
 }
-

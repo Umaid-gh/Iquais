@@ -22,4 +22,15 @@ public interface IUserRepository extends MongoRepository<UserDAO, ObjectId> {
      * @return An Optional containing a UserDAO if a matching user is found, or an empty Optional if no match is found.
      */
     Optional<UserDAO> findByEmail(String studentEmail);
+
+    /**
+     * Find a user by their encoded password.
+     *
+     * This method searches for a user in the database using the provided encoded password.
+     *
+     * @param password The encoded password of the user to be found.
+     * @return An Optional containing a UserDAO if a matching user with the specified encoded password is found,
+     *         or an empty Optional if no match is found.
+     */
+    Optional<UserDAO> findByPassword(String password);
 }

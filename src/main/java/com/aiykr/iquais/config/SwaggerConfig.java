@@ -15,6 +15,11 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 @EnableSwagger2WebMvc
 public class SwaggerConfig {
 
+    /**
+     * Configures and initializes Swagger for API documentation.
+     *
+     * @return A Docket instance for Swagger API configuration.
+     */
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -25,6 +30,11 @@ public class SwaggerConfig {
                 .apiInfo(apiInfo());
     }
 
+    /**
+     * Provides information about the API documentation.
+     *
+     * @return An ApiInfo instance containing API metadata.
+     */
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 .title("Iquais Application API Documentation")

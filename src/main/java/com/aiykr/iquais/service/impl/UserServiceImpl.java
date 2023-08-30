@@ -29,8 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.mail.MessagingException;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import javax.swing.text.StyledEditorKit;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -44,11 +42,13 @@ public class UserServiceImpl implements IUserService {
 
     private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
-//    private static final String ALLOWED_CHARACTERS = "[A-Za-z0-9!@#$%^&*()_+]";
     private static final String ALLOWED_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
 
-    String randomPassword = null;
     private static final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    private static final String ACTIVE_STATUS = "active";
+
+    String randomPassword = null;
 
     @Autowired
     private IUserRepository userRepository;
@@ -66,7 +66,6 @@ public class UserServiceImpl implements IUserService {
      * @return A response containing user details.
      * @throws IquaisException If an error occurs during user creation.
      */
-    // define levels of log
     @Transactional(rollbackFor = {IquaisException.class, EmailSendingException.class, Exception.class})
     public Response<UserResponseDTO> createUser(PostUserDTO postUserDTO) throws IquaisException {
         try {
@@ -75,12 +74,13 @@ public class UserServiceImpl implements IUserService {
             log.info("studentDAO : {}", studentDAO);
             log.info("guardianDAO : {}", guardianDAO);
 
-            sendEmails(postUserDTO.getEmail(), postUserDTO.getGuardianEmail(),randomPassword);
+            sendEmails(postUserDTO.getEmail(), postUserDTO.getGuardianEmail(), randomPassword);
 
             UserResponseDTO userResponseDTO = modelMapper.map(postUserDTO, UserResponseDTO.class);
-            response.setMeta(Meta.builder().statusCode(HttpStatus.CREATED.value()).message("Student Created Successfully").build());
-            response.setData(userResponseDTO);
-            return response;
+            return Response.<UserResponseDTO>builder()
+                    .data(userResponseDTO)
+                    .meta(Meta.builder().statusCode(HttpStatus.CREATED.value()).message("Student Created Successfully").build())
+                    .build();
         } catch (IquaisException iqEx) {
             throw iqEx;
         } catch (Exception ex) {
@@ -114,19 +114,35 @@ public class UserServiceImpl implements IUserService {
         // Check if student already exists
         try {
             Optional<UserDAO> studentUserOpt = userRepository.findByEmail(postUserDTO.getEmail());
+            UserDAO studentUser = null;
             if (studentUserOpt.isPresent()) {
-                log.info("Student Email {} already present in our DB", studentUserOpt.get().getEmail());
-                throw new IquaisException(HttpStatus.CONFLICT, ErrorCodes.IQ002, "Student Email already present in our DB");
+                studentUser = studentUserOpt.get();
+                if (ACTIVE_STATUS.equals(studentUser.getStatus())) {
+                    log.info("Student Email {} is already present and active in our DB", studentUser.getEmail());
+                    throw new IquaisException(HttpStatus.CONFLICT, ErrorCodes.IQ002, "Student Email already present and active in our DB");
+                } else {
+                    // Set the status to active again if it was disabled
+                    studentUser.setStatus(ACTIVE_STATUS);
+                    userRepository.save(studentUser);
+                    log.info("Student Email {} was previously disabled, set to active again", studentUser.getEmail());
+                }
             }
 
             // Generate a random strong password
-            randomPassword = generateRandomPassword();
+            String generatedPassword = generateRandomPassword();
 
             // Encode the password
-            String encodedPassword = passwordEncoder.encode(randomPassword);
+            String encodedPassword = passwordEncoder.encode(generatedPassword);
 
             UserDAO studentDAO = modelMapper.map(postUserDTO, UserDAO.class);
             studentDAO.setType(UserType.STUDENT.name());
+
+            // Check if the generated password is already in the database
+            while (isPasswordInDatabase(encodedPassword)) {
+                generatedPassword = generateRandomPassword();
+                encodedPassword = passwordEncoder.encode(generatedPassword);
+            }
+
             // Save the encoded password
             studentDAO.setPassword(encodedPassword);
 
@@ -140,6 +156,18 @@ public class UserServiceImpl implements IUserService {
             throw new IquaisException(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.IQ001, "Exception occurred while creating student");
         }
     }
+
+    // Helper method to check if the password is already in the database
+    private boolean isPasswordInDatabase(String password) {
+        // Perform a query to check if the encoded password is already used in the database
+        // You need to implement this logic using your UserRepository or another suitable method
+        // Return true if the password is in the database; false if it's not
+        // Example: userRepository.findByEncodedPassword(encodedPassword)
+        // Customize this query based on your database schema
+        Optional<UserDAO> userWithSamePassword = userRepository.findByPassword(password);
+        return userWithSamePassword.isPresent();
+    }
+
 
     /**
      * Creates a new guardian user if not already present based on the provided information.
@@ -180,7 +208,7 @@ public class UserServiceImpl implements IUserService {
      */
     private void sendEmails(String studentEmail, String guardianEmail, String randomPassword) throws IquaisException {
         try {
-            emailService.sendEmail(studentEmail, guardianEmail,  "Student Account Created", getContent(randomPassword));
+            emailService.sendEmail(studentEmail, guardianEmail, "Student Account Created", getContent(randomPassword));
             log.info("Email sent successfully!!");
         } catch (MessagingException msgEx) {
             // Handle exception properly in production code
@@ -200,7 +228,6 @@ public class UserServiceImpl implements IUserService {
         return "Welcome to our platform! \nStudent Account has been created and Guardian Account has been Linked.\nPassword for student: " + randomPassword;
     }
 
-
     /**
      * Retrieves a student's information based on the provided ID.
      *
@@ -213,17 +240,16 @@ public class UserServiceImpl implements IUserService {
         if (optionalUserDAO.isPresent()) {
             UserDAO userDAO = optionalUserDAO.get();
             userResponseDTO = modelMapper.map(userDAO, UserResponseDTO.class);
-            Response<UserResponseDTO> response = Response.<UserResponseDTO>builder()
-                            .data(userResponseDTO)
-                                    .meta(Meta.builder().statusCode(HttpStatus.FOUND.value()).message("User Retrieved Successfully").build())
-                                            .build();
             log.info("User {} present in our DB", userResponseDTO.getFirstName());
-            return response;
+            return Response.<UserResponseDTO>builder()
+                    .data(userResponseDTO)
+                    .meta(Meta.builder().statusCode(HttpStatus.FOUND.value()).message("User Retrieved Successfully").build())
+                    .build();
         } else {
             return Response.<UserResponseDTO>builder()
-                            .data(null)
-                                    .meta(Meta.builder().statusCode(HttpStatus.NOT_FOUND.value()).message("User Not found in DB").build())
-                                            .build();
+                    .data(null)
+                    .meta(Meta.builder().statusCode(HttpStatus.NOT_FOUND.value()).message("User Not found in DB").build())
+                    .build();
         }
     }
 
@@ -235,7 +261,7 @@ public class UserServiceImpl implements IUserService {
      * @param sortBy    The field by which to sort the results.
      * @param sortOrder The sorting order, either "asc" (ascending) or "desc" (descending).
      * @return A ResponseEntity containing the response with user data and appropriate metadata.
-     * @throws IquaisException If an error occurs during searching a data.
+     * @throws IquaisException If an error occurs during searching data.
      */
     public Response<List<UserResponseDTO>> getAllUsers(int page, int size, String sortBy, String sortOrder) throws IquaisException {
         try {
@@ -250,17 +276,50 @@ public class UserServiceImpl implements IUserService {
                     .map(userDAO -> modelMapper.map(userDAO, UserResponseDTO.class))
                     .collect(Collectors.toList());
 
-            Response<List<UserResponseDTO>> response = Response.<List<UserResponseDTO>>builder()
-                            .data(usersList)
-                                    .meta(Meta.builder().message("Retrieval Successful").statusCode(HttpStatus.OK.value()).build())
-                                            .build();
             log.info("Total Users: {}", usersList.size());
             log.info("Users Details: {}", usersList);
-            return response;
-        } catch (DataAccessException ex){
+            return Response.<List<UserResponseDTO>>builder()
+                    .data(usersList)
+                    .meta(Meta.builder().message("Retrieval Successful").statusCode(HttpStatus.OK.value()).build())
+                    .build();
+        } catch (DataAccessException ex) {
             throw new IquaisException(HttpStatus.NOT_FOUND, ErrorCodes.IQ006, "No data found for the search string");
         } catch (Exception ex) {
             throw new IquaisException(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.IQ007, "Internal Error");
+        }
+    }
+
+    /**
+     * Soft Deletes a user by email address.
+     *
+     * @param email The email address of the user to delete.
+     * @return A response containing user information.
+     * @throws IquaisException If an error occurs during the deletion process.
+     */
+    @Override
+    public Response<UserResponseDTO> deleteStudentByEmail(String email) throws IquaisException {
+        UserResponseDTO userResponseDTO = null;
+        Optional<UserDAO> optionalUserDAO = userRepository.findByEmail(email);
+        if (optionalUserDAO.isPresent()) {
+            UserDAO userDAO = optionalUserDAO.get();
+            if (ACTIVE_STATUS.equals(userDAO.getStatus())) {
+                userDAO.setStatus("disabled"); // Set the status to disabled
+                userRepository.save(userDAO); // Persist the status change
+            } else {
+                throw new IquaisException(HttpStatus.FOUND, ErrorCodes.IQ001, "User is already in a disabled status");
+            }
+
+            userResponseDTO = modelMapper.map(userDAO, UserResponseDTO.class);
+            log.info("User {} Soft Deleted in our DB", userResponseDTO.getEmail());
+            return Response.<UserResponseDTO>builder()
+                    .data(userResponseDTO)
+                    .meta(Meta.builder().statusCode(HttpStatus.OK.value()).message("User Soft Deleted Successfully").build())
+                    .build();
+        } else {
+            return Response.<UserResponseDTO>builder()
+                    .data(null)
+                    .meta(Meta.builder().statusCode(HttpStatus.NOT_FOUND.value()).message("User Not found in DB to Delete").build())
+                    .build();
         }
     }
 }
