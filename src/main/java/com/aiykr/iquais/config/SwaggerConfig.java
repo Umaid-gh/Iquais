@@ -38,7 +38,7 @@ public class SwaggerConfig {
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 .title("Iquais Application API Documentation")
-                .description("API documentation for Iquais application")
+                .description("Updated API documentation for Iquais application")
                 .version("1.0.0")
                 .contact(new Contact("Umaid", "", "mailtoumaid@gmail.com"))
                 .build();

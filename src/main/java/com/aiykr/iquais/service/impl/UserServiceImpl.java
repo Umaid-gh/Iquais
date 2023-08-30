@@ -156,17 +156,18 @@ public class UserServiceImpl implements IUserService {
         }
     }
 
-    // Helper method to check if the password is already in the database
+    /**
+     * Checks if a password is already present in the database.
+     *
+     * This method queries the database to determine if a user with the specified encoded password exists.
+     *
+     * @param password The encoded password to check for in the database.
+     * @return `true` if a user with the provided encoded password is found in the database, `false` otherwise.
+     */
     private boolean isPasswordInDatabase(String password) {
-        // Perform a query to check if the encoded password is already used in the database
-        // You need to implement this logic using your UserRepository or another suitable method
-        // Return true if the password is in the database; false if it's not
-        // Example: userRepository.findByEncodedPassword(encodedPassword)
-        // Customize this query based on your database schema
         Optional<UserDAO> userWithSamePassword = userRepository.findByPassword(password);
         return userWithSamePassword.isPresent();
     }
-
 
     /**
      * Creates a new guardian user if not already present based on the provided information.
@@ -251,7 +252,6 @@ public class UserServiceImpl implements IUserService {
                     .build();
         }
     }
-
 
     /**
      * Retrieves a list of users based on pagination and sorting criteria.
