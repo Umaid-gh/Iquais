@@ -17,14 +17,20 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.mail.MessagingException;
-import java.util.ArrayList;
+import javax.swing.text.StyledEditorKit;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Implementation class for managing user-related operations.
@@ -53,7 +59,6 @@ public class UserServiceImpl implements IUserService {
     // define levels of log
     @Transactional(rollbackFor = {IquaisException.class, EmailSendingException.class, Exception.class})
     public Response<UserResponseDTO> createUser(PostUserDTO postUserDTO) throws IquaisException {
-        Response<UserResponseDTO> response = new Response<>();
         try {
             UserDAO studentDAO = createStudent(postUserDTO);
             UserDAO guardianDAO = createGuardian(postUserDTO);
@@ -62,8 +67,10 @@ public class UserServiceImpl implements IUserService {
             sendEmails(postUserDTO.getEmail(), postUserDTO.getGuardianEmail());
 
             UserResponseDTO userResponseDTO = modelMapper.map(postUserDTO, UserResponseDTO.class);
-            response.setMeta(Meta.builder().statusCode(HttpStatus.CREATED.value()).message("Student Created Successfully").build());
-            response.setData(userResponseDTO);
+            Response<UserResponseDTO> response = Response.<UserResponseDTO>builder()
+                            .data(userResponseDTO)
+                                    .meta(Meta.builder().statusCode(HttpStatus.CREATED.value()).message("Student Created Successfully").build())
+                                            .build();
             return response;
         } catch (IquaisException iqEx) {
             throw iqEx;
@@ -106,6 +113,7 @@ public class UserServiceImpl implements IUserService {
      *
      * @param postUserDTO The data required to create the guardian.
      * @return The UserDAO representing the newly created guardian, or null if the guardian already exists.
+     * @throws IquaisException If an error occurs during guardian creation.
      */
     private UserDAO createGuardian(PostUserDTO postUserDTO) throws IquaisException {
         // Check if guardian already exists
@@ -155,41 +163,59 @@ public class UserServiceImpl implements IUserService {
      * @return A response containing the retrieved student's information.
      */
     public Response<UserResponseDTO> getStudentById(String id) {
-        Response<UserResponseDTO> response = new Response<>();
         UserResponseDTO userResponseDTO = null;
         Optional<UserDAO> optionalUserDAO = userRepository.findById(new ObjectId(id));
         if (optionalUserDAO.isPresent()) {
             UserDAO userDAO = optionalUserDAO.get();
             userResponseDTO = modelMapper.map(userDAO, UserResponseDTO.class);
-            response.setData(userResponseDTO);
+            Response<UserResponseDTO> response = Response.<UserResponseDTO>builder()
+                            .data(userResponseDTO)
+                                    .meta(Meta.builder().statusCode(HttpStatus.FOUND.value()).message("User Retrieved Successfully").build())
+                                            .build();
             log.info("User {} present in our DB", userResponseDTO.getFirstName());
-            response.setMeta(Meta.builder().statusCode(HttpStatus.FOUND.value()).message("User Retrieved Successfully").build());
+            return response;
         } else {
-            log.info("User is not present in our DB");
-            response.setMeta(Meta.builder().statusCode(HttpStatus.NOT_FOUND.value()).message("User Not Found in DB").build());
+            return Response.<UserResponseDTO>builder()
+                            .data(null)
+                                    .meta(Meta.builder().statusCode(HttpStatus.NOT_FOUND.value()).message("User Not found in DB").build())
+                                            .build();
         }
-        log.info("User Detail: {}", userResponseDTO);
-        response.setData(userResponseDTO);
-        return response;
     }
 
     /**
-     * Retrieves a list of all users from the database.
+     * Retrieves a list of users based on pagination and sorting criteria.
      *
-     * @return A response containing a list of user information.
+     * @param page      The page number for pagination (0-based index).
+     * @param size      The number of items per page.
+     * @param sortBy    The field by which to sort the results.
+     * @param sortOrder The sorting order, either "asc" (ascending) or "desc" (descending).
+     * @return A ResponseEntity containing the response with user data and appropriate metadata.
+     * @throws IquaisException If an error occurs during searching a data.
      */
-    public Response<List<UserResponseDTO>> getAllUsers() {
-        Response<List<UserResponseDTO>> response = new Response<>();
-        List<UserDAO> userDAOS = userRepository.findAll();
-        List<UserResponseDTO> usersList = new ArrayList<>();
-        userDAOS.forEach(userDAO -> usersList.add(this.modelMapper.map(userDAO, UserResponseDTO.class)));
-        if (usersList.isEmpty())
-            response.setMeta(Meta.builder().message("DataBase is Empty").statusCode(HttpStatus.NOT_FOUND.value()).build());
-        else
-            response.setMeta(Meta.builder().message("Retrieval Successful").statusCode(HttpStatus.OK.value()).build());
-        log.info("Total Users: {}",usersList.size());
-        log.info("Users Details: {}", usersList);
-        response.setData(usersList);
-        return response;
+    public Response<List<UserResponseDTO>> getAllUsers(int page, int size, String sortBy, String sortOrder) throws IquaisException {
+        try {
+            Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
+            Pageable pageable = PageRequest.of(page, size, sort);
+            Page<UserDAO> userPage = userRepository.findAll(pageable);
+
+            if (!userPage.hasContent()) {
+                throw new IquaisException(HttpStatus.NOT_FOUND, ErrorCodes.IQ006, "No data found for the search string");
+            }
+            List<UserResponseDTO> usersList = userPage.getContent().stream()
+                    .map(userDAO -> modelMapper.map(userDAO, UserResponseDTO.class))
+                    .collect(Collectors.toList());
+
+            Response<List<UserResponseDTO>> response = Response.<List<UserResponseDTO>>builder()
+                            .data(usersList)
+                                    .meta(Meta.builder().message("Retrieval Successful").statusCode(HttpStatus.OK.value()).build())
+                                            .build();
+            log.info("Total Users: {}", usersList.size());
+            log.info("Users Details: {}", usersList);
+            return response;
+        } catch (DataAccessException ex){
+            throw new IquaisException(HttpStatus.NOT_FOUND, ErrorCodes.IQ006, "No data found for the search string");
+        } catch (Exception ex) {
+            throw new IquaisException(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.IQ007, "Internal Error");
+        }
     }
 }

@@ -5,9 +5,11 @@ import com.aiykr.iquais.dto.response.Response;
 import com.aiykr.iquais.dto.response.UserResponseDTO;
 import com.aiykr.iquais.exception.IquaisException;
 import com.aiykr.iquais.service.IUserService;
+import lombok.Builder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,24 +20,13 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/v1")
+@Builder
 public class UserController {
 
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
     @Autowired
     IUserService userService;
-
-    /**
-     * Retrieves a list of all users.
-     *
-     * @return A ResponseEntity containing the response with the list of users.
-     */
-    @GetMapping("/users/all")
-    public ResponseEntity<Response<List<UserResponseDTO>>> getAllUsers() {
-        log.info("Fetch All Users API");
-        Response<List<UserResponseDTO>> response = userService.getAllUsers();
-        return ResponseEntity.status(response.getMeta().getStatusCode()).body(response);
-    }
 
     /**
      * Creates a new student user.
@@ -46,7 +37,7 @@ public class UserController {
      */
     @PostMapping("/users/student")
     public ResponseEntity<Response<UserResponseDTO>> createStudent(@RequestBody PostUserDTO postUserDTO) throws IquaisException {
-        log.info("Create New Student API");
+        log.info("[createStudent] Create New Student API");
         Response<UserResponseDTO> response = userService.createUser(postUserDTO);
         return ResponseEntity.status(response.getMeta().getStatusCode()).body(response);
     }
@@ -59,8 +50,28 @@ public class UserController {
      */
     @GetMapping("/users/{id}")
     public ResponseEntity<Response<UserResponseDTO>> getStudentById(@PathVariable String id) {
-        log.info("Get Student by ID API");
+        log.info("[getStudentById] Get Student by ID API");
         Response<UserResponseDTO> response = userService.getStudentById(id);
+        return ResponseEntity.status(response.getMeta().getStatusCode()).body(response);
+    }
+
+    /**
+     * Retrieves a list of all users by page.
+     *
+     * @param page   The number of page to retrieve.
+     * @param size   Size of the page needed to retrieve.
+     * @param sortBy The unique ID of the users.
+     * @return A ResponseEntity containing the response with the list of users.
+     */
+    @GetMapping("/users")
+    public ResponseEntity<Response<List<UserResponseDTO>>> getUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortOrder) throws IquaisException {
+
+        log.info("[getUsers] Get Student data by Page");
+        Response<List<UserResponseDTO>> response = userService.getAllUsers(page, size, sortBy, sortOrder);
         return ResponseEntity.status(response.getMeta().getStatusCode()).body(response);
     }
 }
