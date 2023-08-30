@@ -29,6 +29,16 @@ public class ErrorCodes {
     // Can continue adding more error codes as needed for your application.
 
     /**
+     * Error code while Database is Empty.
+     */
+    public static final String IQ006 = "IQ006";
+
+    /**
+     * Error code while Internal Error.
+     */
+    public static final String IQ007 = "IQ007";
+
+    /**
      * Private constructor to prevent the instantiation of this class.
      * This class should only be used to access error code constants.
      */
